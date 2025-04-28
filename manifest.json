@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Subtitle Translator",
+    "version": "1.0",
+    "description": "Traduza automaticamente legendas ao pausar vídeos no HBO Max.",
+    "permissions": [
+      "activeTab",
+      "scripting"
+    ],
+    "content_scripts": [
+      {
+        "matches": [
+          "https://www.hbomax.com/*",
+          "https://play.max.com/*"
+        ],
+        "js": ["content.js"],
+        "css": ["style.css"]
+      }
+    ]
+  }
+  
