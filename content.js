@@ -48,12 +48,19 @@ async function captureSubtitle() {
 
 // Função para exibir o popup com a tradução
 function showPopup(translatedText) {
-    // Cria o popup se ele não existir
-    let popup = document.getElementById('translationPopup');
+    // Usa o contêiner em tela cheia se disponível
+    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+
+    // Usa o body como fallback
+    const parent = fullscreenElement || document.body;
+
+    // Tenta encontrar popup já existente dentro do parent
+    let popup = parent.querySelector('#translationPopup');
+
     if (!popup) {
         popup = document.createElement('div');
         popup.id = 'translationPopup';
-        popup.style.position = 'fixed'; // Usando 'fixed' para garantir que funcione em tela cheia
+        popup.style.position = 'fixed';
         popup.style.top = '50%';
         popup.style.left = '50%';
         popup.style.transform = 'translate(-50%, -50%)';
@@ -63,15 +70,16 @@ function showPopup(translatedText) {
         popup.style.fontSize = '16px';
         popup.style.borderRadius = '8px';
         popup.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
-        popup.style.zIndex = '2147483647'; // Máximo valor de z-index, para garantir sobreposição
-        popup.style.pointerEvents = 'none'; // Evita que o popup bloqueie a interação com outros elementos
-        document.body.appendChild(popup);
+        popup.style.zIndex = '2147483647';
+        popup.style.pointerEvents = 'none';
+        popup.style.display = 'block';
+        parent.appendChild(popup);
     }
 
-    // Define o conteúdo do popup
     popup.innerText = translatedText;
-    popup.style.display = 'block'; // Garante que o popup seja visível
+    popup.style.display = 'block';
 }
+
 
 // Função para esconder o popup
 function hidePopup() {
