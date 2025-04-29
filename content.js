@@ -1,6 +1,33 @@
-// Função para traduzir texto usando a API do MyMemory
-async function translateTextMyMemory(text) {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt`;
+// 📍 Altere aqui o idioma destino da tradução (ex: 'pt', 'es', 'fr', etc.)
+const targetLang = 'pt'; 
+
+// ✅ Detecta a plataforma atual
+function getCurrentPlatform() {
+    const hostname = window.location.hostname;
+    if (hostname.includes('play.max.com')) return 'hbomax';
+    if (hostname.includes('netflix.com')) return 'netflix';
+    return 'unknown';
+}
+
+// ✅ Captura os elementos de legenda com base na plataforma
+function getSubtitleElements() {
+    const platform = getCurrentPlatform();
+
+    if (platform === 'hbomax') {
+        return document.querySelectorAll('.TextCue-Fuse-Web-Play__sc-1wvp621-4');
+    }
+
+    if (platform === 'netflix') {
+        // 📍 Este é o seletor para as legendas da Netflix
+        return document.querySelectorAll('.player-timedtext-text-container span span');
+    }
+
+    return [];
+}
+
+// ✅ Tradução dinâmica com idioma alvo configurável
+async function translateTextMyMemory(text, langTo = 'pt') {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt|${langTo}`;
 
     try {
         const res = await fetch(url);
@@ -13,17 +40,17 @@ async function translateTextMyMemory(text) {
             return data.responseData.translatedText;
         } else {
             console.warn("⚠️ Tradução não encontrada.");
-            return "Erro na tradução"; // Caso não encontre tradução
+            return "Erro na tradução";
         }
     } catch (error) {
         console.error("❌ Erro ao tentar traduzir com MyMemory:", error);
-        return "Erro na tradução"; // Caso ocorra erro na requisição
+        return "Erro na tradução";
     }
 }
 
-// Função de captura de legendas e exibição do popup
+// ✅ Captura e traduz legenda atual
 async function captureSubtitle() {
-    const subtitleElements = document.querySelectorAll('.TextCue-Fuse-Web-Play__sc-1wvp621-4');
+    const subtitleElements = getSubtitleElements();
 
     if (subtitleElements.length > 0) {
         const subtitleText = Array.from(subtitleElements)
@@ -32,12 +59,11 @@ async function captureSubtitle() {
 
         console.log("📝 Legenda capturada:", subtitleText);
 
-        // Traduz a legenda usando a função de tradução MyMemory
-        const translatedText = await translateTextMyMemory(subtitleText);
+        const translatedText = await translateTextMyMemory(subtitleText, targetLang);
 
         if (translatedText && translatedText !== "Erro na tradução") {
             console.log("🔄 Legenda traduzida:", translatedText);
-            showPopup(translatedText); // Exibe o popup com a tradução
+            showPopup(translatedText);
         } else {
             console.log("⚠️ Erro ao traduzir.");
         }
@@ -46,15 +72,11 @@ async function captureSubtitle() {
     }
 }
 
-// Função para exibir o popup com a tradução
+// ✅ Exibe o popup com a tradução
 function showPopup(translatedText) {
-    // Usa o contêiner em tela cheia se disponível
     const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-
-    // Usa o body como fallback
     const parent = fullscreenElement || document.body;
 
-    // Tenta encontrar popup já existente dentro do parent
     let popup = parent.querySelector('#translationPopup');
 
     if (!popup) {
@@ -80,21 +102,20 @@ function showPopup(translatedText) {
     popup.style.display = 'block';
 }
 
-
-// Função para esconder o popup
+// ✅ Esconde o popup
 function hidePopup() {
     const popup = document.getElementById('translationPopup');
     if (popup) {
-        popup.style.display = 'none'; // Esconde o popup
+        popup.style.display = 'none';
     }
 }
 
-// Verifica se o vídeo está em tela cheia
+// ✅ Verifica se está em tela cheia
 function isFullScreen() {
     return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
 }
 
-// Espera o vídeo carregar
+// ✅ Espera o vídeo carregar e escuta os eventos
 function waitForVideo() {
     const video = document.querySelector('video');
 
@@ -103,31 +124,25 @@ function waitForVideo() {
 
         video.addEventListener('pause', () => {
             console.log("⏸️ Vídeo pausado!");
-            captureSubtitle(); // Chama a função que captura e traduz a legenda
+            captureSubtitle();
         });
 
         video.addEventListener('play', () => {
             console.log("▶️ Vídeo reproduzindo!");
-            hidePopup(); // Esconde o popup quando o vídeo voltar a rodar
+            hidePopup();
         });
 
-        // Detecta quando entra em tela cheia
         document.addEventListener('fullscreenchange', () => {
-            if (!isFullScreen()) {
-                hidePopup(); // Esconde o popup quando sai da tela cheia
-            }
+            if (!isFullScreen()) hidePopup();
         });
-        
-        // Detecta a entrada e saída de tela cheia
+
         video.addEventListener('webkitfullscreenchange', () => {
-            if (!isFullScreen()) {
-                hidePopup();
-            }
+            if (!isFullScreen()) hidePopup();
         });
     } else {
-        setTimeout(waitForVideo, 500); // Tenta novamente em 500ms caso o vídeo não seja encontrado
+        setTimeout(waitForVideo, 500);
     }
 }
 
-// Começa a procurar o vídeo
+// ✅ Inicia o processo
 waitForVideo();
