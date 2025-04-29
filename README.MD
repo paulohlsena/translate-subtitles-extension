@@ -50,6 +50,8 @@ Uma extensão para Chrome que traduz automaticamente as legendas visíveis ao pa
 
 ---
 
+## Importante: Por ser um MVP, a API de tradução é gratuita e pode apresentar instabilidades.
+
 ## ⚙️ Estrutura do Projeto
 
 ```bash
